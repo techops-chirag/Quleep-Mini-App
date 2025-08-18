@@ -1,10 +1,15 @@
 const { Pool } = require('pg');
-const dotenv = require('dotenv');
-dotenv.config();
+
+const isProd = process.env.NODE_ENV === 'production';
 
 const pool = new Pool({
   connectionString: process.env.DATABASE_URL,
-  ssl: process.env.DATABASE_URL?.includes('amazonaws') ? { rejectUnauthorized: false } : false,
+  ssl: isProd
+    ? { rejectUnauthorized: false }
+    : false,
 });
 
-module.exports = pool;
+module.exports = {
+  query: (text, params) => pool.query(text, params),
+  pool,
+};
