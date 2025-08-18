@@ -9,8 +9,10 @@ const Gallery = () => {
   const [category, setCategory] = useState('');
 
   useEffect(() => {
-    fetchProducts({ q, category }).then((res) => setItems(res.data));
-  }, [q, category]);
+  fetchProducts({ q, category })
+    .then((res) => setItems(res.data.items)) // <-- fixed
+    .catch((err) => console.error(err));
+}, [q, category]);
 
   return (
     <div className="container">

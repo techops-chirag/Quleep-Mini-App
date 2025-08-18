@@ -1,57 +1,49 @@
-const db = require('../db/pool');
+const pool = require('../db/pool');
 
-async function initDb() {
-  await db.query(`
-    CREATE TABLE IF NOT EXISTS products (
-      id SERIAL PRIMARY KEY,
-      title TEXT NOT NULL,
-      description TEXT,
-      category TEXT,
-      thumbnail TEXT,
-      model_url TEXT,
-      price NUMERIC(10,2) DEFAULT 0
+const ProductModel = {
+  async getAll({ q, category }) {
+    const values = [];
+    let sql = `SELECT id, name, category, price, image_url, model_url, description
+               FROM products`;
+    const where = [];
+
+    if (q) {
+      values.push(`%${q}%`);
+      const idx = values.length;
+      where.push(`(LOWER(name) LIKE LOWER($${idx}) OR LOWER(category) LIKE LOWER($${idx}))`);
+    }
+    if (category) {
+      values.push(category);
+      const idx = values.length;
+      where.push(`LOWER(category) = LOWER($${idx})`);
+    }
+
+    if (where.length) {
+      sql += ` WHERE ${where.join(' AND ')}`;
+    }
+    sql += ' ORDER BY created_at DESC, id DESC';
+
+    const { rows } = await pool.query(sql, values);
+    return rows;
+  },
+
+  async getById(id) {
+    const { rows } = await pool.query(
+      `SELECT id, name, category, price, image_url, model_url, description
+       FROM products WHERE id = $1`,
+      [id]
     );
-  `);
+    return rows[0] || null;
+  },
 
-  // seed if empty
-  const { rows } = await db.query('SELECT COUNT(*)::int AS count FROM products');
-  if (rows[0].count === 0) {
-    await db.query(
-      `INSERT INTO products (title, description, category, thumbnail, model_url, price)
-       VALUES
-       ('Chair Alpha', 'Ergonomic office chair', 'chairs', '/images/chair.jpg', 'https://modelviewer.dev/shared-assets/models/Astronaut.glb', 129.99),
-       ('Sofa Beta', '2-seater compact sofa', 'sofas', '/images/sofa.jpg', 'https://modelviewer.dev/shared-assets/models/RobotExpressive.glb', 399.00),
-       ('Lamp Gamma', 'Minimal table lamp', 'lamps', '/images/lamp.jpg', 'https://modelviewer.dev/shared-assets/models/Horse.glb', 59.00)
-      `
-    );
+  // ---- Aliases for controller ----
+  list: async function(params) {
+    return this.getAll(params);
+  },
+
+  byId: async function(id) {
+    return this.getById(id);
   }
-}
+};
 
-async function list({ q, category, limit = 24, offset = 0 }) {
-  const clauses = [];
-  const params = [];
-
-  if (q) {
-    params.push(`%${q}%`);
-    clauses.push(`(LOWER(title) LIKE LOWER($${params.length}) OR LOWER(description) LIKE LOWER($${params.length}))`);
-  }
-  if (category) {
-    params.push(category);
-    clauses.push(`category = $${params.length}`);
-  }
-
-  params.push(limit);
-  params.push(offset);
-
-  const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
-  const sql = `SELECT * FROM products ${where} ORDER BY id DESC LIMIT $${params.length - 1} OFFSET $${params.length}`;
-  const { rows } = await db.query(sql, params);
-  return rows;
-}
-
-async function byId(id) {
-  const { rows } = await db.query('SELECT * FROM products WHERE id = $1', [id]);
-  return rows[0] || null;
-}
-
-module.exports = { initDb, list, byId };
+module.exports = ProductModel;

@@ -1,4 +1,3 @@
-// frontend/webpack.config.js
 const path = require('path');
 
 module.exports = {
@@ -14,17 +13,25 @@ module.exports = {
     historyApiFallback: true,
     port: 3000,
     hot: true,
-    allowedHosts: 'all', // fixes “Invalid Host header” in Codespaces/Gitpod
-    client: {
-      overlay: true, // show build/runtime overlay errors in the browser
-    },
+    allowedHosts: 'all', // allow requests from any host (needed for Gitpod)
+    proxy: [
+      {
+        context: ['/api'], // proxy all /api requests to backend
+        target: process.env.API_PROXY_TARGET || 'http://localhost:5000',
+        changeOrigin: true,
+        secure: false,
+      },
+    ],
   },
   module: {
     rules: [
       {
         test: /\.jsx?$/,
         exclude: /node_modules/,
-        use: { loader: 'babel-loader', options: { presets: ['@babel/preset-env', '@babel/preset-react'] } },
+        use: {
+          loader: 'babel-loader',
+          options: { presets: ['@babel/preset-env', '@babel/preset-react'] },
+        },
       },
       { test: /\.css$/, use: ['style-loader', 'css-loader'] },
     ],
