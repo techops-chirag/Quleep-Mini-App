@@ -1,4 +1,4 @@
-const webpack = require('webpack');
+// frontend/webpack.config.js
 const path = require('path');
 
 module.exports = {
@@ -9,42 +9,25 @@ module.exports = {
     publicPath: '/',
     clean: true,
   },
-  
-  plugins: [
-  new webpack.DefinePlugin({
-    'process.env.REACT_APP_API_BASE_URL': JSON.stringify(process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000'),
-  }),
-],
-
   devServer: {
-  static: {
-    directory: path.join(__dirname, 'public'),
+    static: { directory: path.join(__dirname, 'public') },
+    historyApiFallback: true,
+    port: 3000,
+    hot: true,
+    allowedHosts: 'all', // fixes “Invalid Host header” in Codespaces/Gitpod
+    client: {
+      overlay: true, // show build/runtime overlay errors in the browser
+    },
   },
-  historyApiFallback: true,
-  port: 3000,
-  hot: true,
-  allowedHosts: "all",   // ✅ allow Codespaces / tunnels
-},
-
   module: {
     rules: [
       {
         test: /\.jsx?$/,
         exclude: /node_modules/,
-        use: {
-          loader: 'babel-loader',
-          options: {
-            presets: ['@babel/preset-env', '@babel/preset-react'],
-          },
-        },
+        use: { loader: 'babel-loader', options: { presets: ['@babel/preset-env', '@babel/preset-react'] } },
       },
-      {
-        test: /\.css$/,
-        use: ['style-loader', 'css-loader'],
-      },
+      { test: /\.css$/, use: ['style-loader', 'css-loader'] },
     ],
   },
-  resolve: {
-    extensions: ['.js', '.jsx'],
-  },
+  resolve: { extensions: ['.js', '.jsx'] },
 };
