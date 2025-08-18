@@ -1,3 +1,4 @@
+const webpack = require('webpack');
 const path = require('path');
 
 module.exports = {
@@ -8,14 +9,23 @@ module.exports = {
     publicPath: '/',
     clean: true,
   },
+  
+  plugins: [
+  new webpack.DefinePlugin({
+    'process.env.REACT_APP_API_BASE_URL': JSON.stringify(process.env.REACT_APP_API_BASE_URL || 'http://localhost:5000'),
+  }),
+],
+
   devServer: {
-    static: {
-      directory: path.join(__dirname, 'public'),
-    },
-    historyApiFallback: true,
-    port: 3000,
-    hot: true,
+  static: {
+    directory: path.join(__dirname, 'public'),
   },
+  historyApiFallback: true,
+  port: 3000,
+  hot: true,
+  allowedHosts: "all",   // ✅ allow Codespaces / tunnels
+},
+
   module: {
     rules: [
       {

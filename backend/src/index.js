@@ -11,7 +11,15 @@ app.use(express.json());
 
 // CORS
 const allowed = (process.env.ALLOWED_ORIGINS || '').split(',').filter(Boolean);
-app.use(cors({ origin: allowed.length ? allowed : '*' }));
+app.use(cors({
+  origin: function (origin, callback) {
+    // allow requests with no origin (like mobile apps, curl)
+    if (!origin) return callback(null, true);
+    if (allowed.includes(origin)) return callback(null, true);
+    return callback(new Error("Not allowed by CORS"));
+  },
+  credentials: true,
+}));
 
 app.get('/', (req, res) => res.send('Backend is running'));
 app.use('/api/products', productRoutes);
