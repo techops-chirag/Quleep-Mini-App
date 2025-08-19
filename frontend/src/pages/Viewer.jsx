@@ -8,8 +8,8 @@ const isGlbLike = (name = '') => /(\.glb|\.gltf)$/i.test(name);
 const Viewer = () => {
   const { id } = useParams();
   const [item, setItem] = useState(null);
-  const [modelUrl, setModelUrl] = useState(null); // active URL (product.model_url or user override)
-  const [localObjectUrl, setLocalObjectUrl] = useState(null); // for cleanup
+  const [modelUrl, setModelUrl] = useState(null);
+  const [localObjectUrl, setLocalObjectUrl] = useState(null);
 
   useEffect(() => {
     let alive = true;
@@ -26,7 +26,6 @@ const Viewer = () => {
     return () => { alive = false; };
   }, [id]);
 
-  // Drag & drop local .glb/.gltf
   const onDrop = useCallback((e) => {
     e.preventDefault();
     const f = e.dataTransfer.files?.[0];
@@ -68,7 +67,9 @@ const Viewer = () => {
   return (
     <div className="container">
       <div className="viewer-wrap">
-        <ModelCanvas url={modelUrl} />
+        <div className="viewer">
+          <ModelCanvas url={modelUrl} />
+        </div>
         <div className="details">
           <div className="badge">{item.category}</div>
           <h2>{item.name}</h2>
@@ -80,16 +81,16 @@ const Viewer = () => {
             onDragOver={(e) => e.preventDefault()}
             onDrop={onDrop}
           >
-            <span>Drag &amp; drop .glb/.gltf here to preview</span>
+            <span>Drag & drop .glb/.gltf here to preview</span>
           </div>
+
+          <form className="urlbar" onSubmit={onUrlSubmit}>
+            <input name="modelurl" placeholder="…or paste a .glb/.gltf URL and press Enter" />
+            <button type="submit">Load URL</button>
+            <button type="button" onClick={resetToProduct}>Reset to Product Model</button>
+          </form>
         </div>
       </div>
-
-      <form className="urlbar" onSubmit={onUrlSubmit}>
-        <input name="modelurl" placeholder="…or paste a .glb/.gltf URL and press Enter" />
-        <button type="submit">Load URL</button>
-        <button type="button" onClick={resetToProduct}>Reset to Product Model</button>
-      </form>
     </div>
   );
 };

@@ -2,7 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 
 const ProductCard = ({ product }) => (
-  <Link to={`/product/${product.id}`} className="card">
+  <Link to={`/viewer/${product.id}`} className="card">
     <img src={product.image_url} alt={product.name} loading="lazy" />
     <div className="card-body">
       <div className="badge">{product.category}</div>

@@ -1,11 +1,9 @@
-version: "3.8"
-
 services:
   backend:
-    build: ./backend
+    build: ../backend
     command: npm run dev
     volumes:
-      - ./backend:/workspace/backend
+      - ../backend:/workspace/backend
     networks:
       - devnet
     environment:
@@ -17,10 +15,10 @@ services:
       - db
 
   frontend:
-    build: ./frontend
+    build: ../frontend
     command: npm start
     volumes:
-      - ./frontend:/workspace/frontend
+      - ../frontend:/workspace/frontend
     environment:
       - REACT_APP_API_BASE_URL=http://localhost:5000
     ports:
