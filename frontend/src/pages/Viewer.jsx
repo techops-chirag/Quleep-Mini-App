@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { fetchProductById } from '../api';
 import ModelCanvas from '../components/ModelCanvas';
 
-const isGlbLike = (name = '') => /\.(glb|gltf)$/i.test(name);
+const isGlbLike = (name = '') => /(\.glb|\.gltf)$/i.test(name);
 
 const Viewer = () => {
   const { id } = useParams();
@@ -14,65 +14,74 @@ const Viewer = () => {
   useEffect(() => {
     let alive = true;
     (async () => {
-      const res = await fetchProductById(id);
-      if (!alive) return;
-      setItem(res.data);
-      setModelUrl(res.data?.model_url || null);
+      try {
+        const res = await fetchProductById(id);
+        if (!alive) return;
+        setItem(res.data);
+        setModelUrl(res.data.model_url);
+      } catch (e) {
+        console.error(e);
+      }
     })();
     return () => { alive = false; };
   }, [id]);
 
-  // Drag & drop handler for .glb/.gltf file
+  // Drag & drop local .glb/.gltf
   const onDrop = useCallback((e) => {
     e.preventDefault();
-    const file = e.dataTransfer.files?.[0];
-    if (!file) return;
-    if (!isGlbLike(file.name)) {
+    const f = e.dataTransfer.files?.[0];
+    if (!f) return;
+    if (!isGlbLike(f.name)) {
       alert('Please drop a .glb or .gltf file');
       return;
     }
+    const url = URL.createObjectURL(f);
     if (localObjectUrl) URL.revokeObjectURL(localObjectUrl);
-    const url = URL.createObjectURL(file);
     setLocalObjectUrl(url);
     setModelUrl(url);
   }, [localObjectUrl]);
 
-  const prevent = (e) => e.preventDefault();
-
   const onUrlSubmit = (e) => {
     e.preventDefault();
     const url = new FormData(e.currentTarget).get('modelurl');
-    if (!url) return;
-    if (!isGlbLike(String(url))) {
-      alert('URL must end with .glb or .gltf');
+    if (!url || !isGlbLike(String(url))) {
+      alert('Enter a valid .glb/.gltf URL');
       return;
+    }
+    if (localObjectUrl) {
+      URL.revokeObjectURL(localObjectUrl);
+      setLocalObjectUrl(null);
     }
     setModelUrl(String(url));
   };
 
   const resetToProduct = () => {
-    if (localObjectUrl) URL.revokeObjectURL(localObjectUrl);
-    setLocalObjectUrl(null);
-    if (item?.model_url) setModelUrl(item.model_url);
+    if (localObjectUrl) {
+      URL.revokeObjectURL(localObjectUrl);
+      setLocalObjectUrl(null);
+    }
+    if (item) setModelUrl(item.model_url);
   };
 
-  if (!item) return <div className="container">Loading...</div>;
+  if (!item) return <div className="container"><p>Loading…</p></div>;
 
   return (
     <div className="container">
-      <h2>{item.name}</h2>
-      <p className="desc">{item.description}</p>
+      <div className="viewer-wrap">
+        <ModelCanvas url={modelUrl} />
+        <div className="details">
+          <div className="badge">{item.category}</div>
+          <h2>{item.name}</h2>
+          <p className="price">₹{Number(item.price).toLocaleString('en-IN')}</p>
+          <p style={{opacity:.8}}>{item.description}</p>
 
-      <div
-        className="dropwrap"
-        onDragOver={prevent}
-        onDragEnter={prevent}
-        onDrop={onDrop}
-        title="Drag & drop a .glb/.gltf file to temporarily replace the model"
-      >
-        {modelUrl && <ModelCanvas url={modelUrl} />}
-        <div className="dropzone">
-          <span>Drag & drop .glb/.gltf here to preview</span>
+          <div
+            className="dropwrap"
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={onDrop}
+          >
+            <span>Drag &amp; drop .glb/.gltf here to preview</span>
+          </div>
         </div>
       </div>
 

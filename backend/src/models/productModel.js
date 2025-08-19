@@ -15,13 +15,13 @@ const ProductModel = {
     if (category) {
       values.push(category);
       const idx = values.length;
-      where.push(`LOWER(category) = LOWER($${idx})`);
+      where.push(`category = $${idx}`);
     }
 
     if (where.length) {
-      sql += ` WHERE ${where.join(' AND ')}`;
+      sql += ` WHERE ` + where.join(' AND ');
     }
-    sql += ' ORDER BY created_at DESC, id DESC';
+    sql += ` ORDER BY created_at DESC, id DESC`;
 
     const { rows } = await pool.query(sql, values);
     return rows;

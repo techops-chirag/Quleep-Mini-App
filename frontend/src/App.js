@@ -4,6 +4,7 @@ import { Routes, Route } from 'react-router-dom';
 import Header from './components/Header';
 import Gallery from './pages/Gallery';
 import Viewer from './pages/Viewer';
+import './styles.css';
 
 const App = () => {
   return (

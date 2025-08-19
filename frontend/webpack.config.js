@@ -1,25 +1,25 @@
+const webpack = require('webpack');
 const path = require('path');
 
 module.exports = {
   entry: './src/index.js',
   output: {
-    path: path.resolve(__dirname, 'dist'),
+    path: path.resolve(__dirname, 'public'),
     filename: 'bundle.js',
     publicPath: '/',
-    clean: true,
+    clean: false,
   },
   devServer: {
     static: { directory: path.join(__dirname, 'public') },
     historyApiFallback: true,
     port: 3000,
     hot: true,
-    allowedHosts: 'all', // allow requests from any host (needed for Gitpod)
+    allowedHosts: 'all',
     proxy: [
       {
-        context: ['/api'], // proxy all /api requests to backend
-        target: process.env.API_PROXY_TARGET || 'http://localhost:5000',
+        context: ['/api'],
+        target: 'http://localhost:5000',
         changeOrigin: true,
-        secure: false,
       },
     ],
   },
@@ -37,4 +37,11 @@ module.exports = {
     ],
   },
   resolve: { extensions: ['.js', '.jsx'] },
+  plugins: [
+  new webpack.DefinePlugin({
+    'process.env': {
+      REACT_APP_API_BASE_URL: JSON.stringify(process.env.REACT_APP_API_BASE_URL || '')
+    }
+  })
+]
 };

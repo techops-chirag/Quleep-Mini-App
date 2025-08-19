@@ -7,19 +7,30 @@ const Gallery = () => {
   const [items, setItems] = useState([]);
   const [q, setQ] = useState('');
   const [category, setCategory] = useState('');
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-  fetchProducts({ q, category })
-    .then((res) => setItems(res.data.items)) // <-- fixed
-    .catch((err) => console.error(err));
-}, [q, category]);
+    setLoading(true);
+    fetchProducts({ q, category })
+      .then((res) => setItems(res.data.items || []))
+      .catch((err) => {
+        console.error(err);
+        setItems([]);
+      })
+      .finally(() => setLoading(false));
+  }, [q, category]);
 
   return (
     <div className="container">
       <SearchBar q={q} setQ={setQ} category={category} setCategory={setCategory} />
-      <div className="grid">
-        {items.map((p) => <ProductCard key={p.id} product={p} />)}
-      </div>
+      {loading ? (
+        <p style={{opacity:.7}}>Loading…</p>
+      ) : (
+        <div className="grid">
+          {items.map((p) => <ProductCard key={p.id} product={p} />)}
+          {!items.length && <p style={{opacity:.7}}>No products found.</p>}
+        </div>
+      )}
     </div>
   );
 };
