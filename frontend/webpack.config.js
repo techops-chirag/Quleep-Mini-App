@@ -4,13 +4,13 @@ const path = require('path');
 module.exports = {
   entry: './src/index.js',
   output: {
-    path: path.resolve(__dirname, 'public'),
+    path: path.resolve(__dirname, 'build'),   // ✅ put final build here
     filename: 'bundle.js',
-    publicPath: '/',
-    clean: false,
+    publicPath: '/',                          // keeps React Router working
+    clean: true,                              // ✅ clean old builds safely
   },
   devServer: {
-    static: { directory: path.join(__dirname, 'public') },
+    static: { directory: path.join(__dirname, 'public') }, // ✅ keep serving from public/ during dev
     historyApiFallback: true,
     port: 3000,
     hot: true,
@@ -38,10 +38,12 @@ module.exports = {
   },
   resolve: { extensions: ['.js', '.jsx'] },
   plugins: [
-  new webpack.DefinePlugin({
-    'process.env': {
-      REACT_APP_API_BASE_URL: JSON.stringify(process.env.REACT_APP_API_BASE_URL || '')
-    }
-  })
-]
+    new webpack.DefinePlugin({
+      'process.env': {
+        REACT_APP_API_BASE_URL: JSON.stringify(
+          process.env.REACT_APP_API_BASE_URL || ''
+        ),
+      },
+    }),
+  ],
 };
